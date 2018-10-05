@@ -23,13 +23,12 @@ router.get('/test', (request, response) =>
 // @desc    Register user, check if email already exists, set avatar options, hash password
 // @access  Public
 router.post('/register', (request, response) => {
-
     // error = validateRegisterInput(req.body).error
     // isValid = validateRegisterInput(req.body).isValid
-    const { errors, isValid } = validateRegisterInput(req.body); //error = validateRegisterInput(req.body).error
-
+    const { errors, isValid } = validateRegisterInput(request.body); 
+    
     // Check Validation
-    if(!isValid) {
+    if (!isValid) {
         return response.status(400).json(errors);
     }
 
