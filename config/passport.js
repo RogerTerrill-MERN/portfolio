@@ -4,6 +4,9 @@ const mongoose = require('mongoose');
 const User = mongoose.model('users');
 const keys = require('../config/keys');
 
+
+// Based on this documentation https://www.npmjs.com/package/passport-jwt but ES6 style
+
 const options = {};
 options.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
 options.secretOrKey = keys.secretOrKey;

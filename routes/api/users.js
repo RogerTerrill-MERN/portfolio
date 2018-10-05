@@ -105,7 +105,7 @@ router.post('/login', (request, response) => {
 // @access  Private
 router.get(
     '/current',
-    passport.authenticate('jwt', { session: false }),
+    passport.authenticate('jwt', { session: false }), //This is middleware
     (request, response) => {
         response.json({
             id: request.user.id,
