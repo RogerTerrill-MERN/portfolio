@@ -71,8 +71,9 @@ router.post('/register', (request, response) => {
 // @desc    Login User / Returning Token
 // @access  Public
 router.post('/login', (request, response) => {
-    const email = request.body.email;
-    const password = request.body.password;
+    const { email, password } = request.body;
+    // const email = request.body.email;
+    // const password = request.body.password;
 
     // Find user by email
     User.findOne({ email: email }).then(user => {
