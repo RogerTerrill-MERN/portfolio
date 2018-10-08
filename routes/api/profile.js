@@ -82,9 +82,9 @@ router.post(
         // Skills - Split into array
         if (typeof request.body.skills !== 'undefined') {
             //We check if there are skills
-            profileFields.skills = request.body.skills.split(',').map(item => {
-                return item.trim();
-            }); // Then we put them as an array in profileField.skills
+            profileFields.skills = request.body.skills
+                .split(',')
+                .map(item => item.trim()); // Then we put them as an array in profileField.skills
         }
 
         // Social
