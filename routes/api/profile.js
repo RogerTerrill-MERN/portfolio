@@ -3,6 +3,9 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const passport = require('passport');
 
+// Load Validation
+const validateProfileInput = require('../../validation/profile');
+
 // Load Profile Model
 const Profile = require('../../models/Profile');
 
@@ -25,6 +28,7 @@ router.get(
     (request, response) => {
         const errors = {};
         Profile.findOne({ user: request.user.id })
+            .populate('user', ['name', 'avatar'])
             .then(profile => {
                 if (!profile) {
                     errors.noprofile = 'There is no profile for this user';
@@ -43,6 +47,14 @@ router.post(
     '/',
     passport.authenticate('jwt', { session: false }),
     (request, response) => {
+        const { errors, isValid } = validateProfileInput(request.body);
+
+        // Check Validation
+        if (!isValid) {
+            // Return any errors with 400 status
+            return response.status(400).json(errors);
+        }
+
         const profileFields = {};
         profileFields.user = request.user.id;
         if (request.body.handle) {
@@ -70,7 +82,9 @@ router.post(
         // Skills - Split into array
         if (typeof request.body.skills !== 'undefined') {
             //We check if there are skills
-            profileFields.skills = request.body.skills.split(','); // Then we put them as an array in profileField.skills
+            profileFields.skills = request.body.skills.split(',').map(item => {
+                return item.trim();
+            }); // Then we put them as an array in profileField.skills
         }
 
         // Social
@@ -91,14 +105,14 @@ router.post(
             profileFields.social.instagram = request.body.instagram;
         }
 
-        Profile.findOneAndUpdate({ user: request.user.id }).then(profile => {
+        Profile.findOne({ user: request.user.id }).then(profile => {
             if (profile) {
                 // Update
                 Profile.findOneAndUpdate(
                     { user: request.user.id },
                     { $set: profileFields },
                     { new: true }
-                ).then(profile => respond.json(profile));
+                ).then(profile => response.json(profile));
             } else {
                 // Create
 
