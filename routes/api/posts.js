@@ -5,6 +5,7 @@ const passport = require('passport'); // Since we want to protect some routes
 
 // Post model
 const Post = require('../../models/Post');
+const Profile = require('../../models/Profile');
 
 // Validation
 const validatePostInput = require('../../validation/post');
@@ -15,6 +16,33 @@ const validatePostInput = require('../../validation/post');
 router.get('/test', (request, response) =>
     response.json({ msg: 'Posts Works!' })
 );
+
+// @route   GET api/posts
+// @desc    Get post
+// @access  Public
+router.get('/', (request, response) => {
+    Post.find()
+        .sort({ date: -1 })
+        .then(posts => response.json(posts))
+
+        .catch(err =>
+            response
+                .status(404)
+                .json({ nopostsfound: 'No posts found with that id' })
+        );
+});
+
+// @route   GET api/posts/:id
+// @desc    Get post by id
+router.get('/:id', (request, response) => {
+    Post.findById(request.params.id)
+        .then(post => response.json(post))
+        .catch(err =>
+            response
+                .status(404)
+                .json({ nopostfound: 'No post found with that id' })
+        );
+});
 
 // @route   POST api/posts
 // @desc    Create post
@@ -40,6 +68,33 @@ router.post(
         });
 
         newPost.save().then(post => response.json(post));
+    }
+);
+
+// @route   DELETE api/posts/:id
+// @desc    Delete post
+// @access  Private
+router.delete(
+    '/:id',
+    passport.authenticate('jwt', { session: false }),
+    (request, response) => {
+        Profile.findOne({ user: request.user.id }).then(profile => {
+            Post.findById(request.params.id)
+                .then(post => {
+                    //Check for post owner
+                    if (post.user.toString() != request.user.id) {
+                        return response
+                            .status(401)
+                            .json({ notauthorized: 'User not authorized' });
+                    }
+
+                    // Delete
+                    post.remove().then(() => response.json({ success: true }));
+                })
+                .catch(error =>
+                    response.status(404).json({ postnotfound: 'No Post found' })
+                );
+        });
     }
 );
 
