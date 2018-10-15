@@ -98,4 +98,73 @@ router.delete(
     }
 );
 
+// @route   POST api/posts/like/:id
+// @desc    Like post
+// @access  Private
+router.post(
+    '/like/:id',
+    passport.authenticate('jwt', { session: false }),
+    (request, response) => {
+        Profile.findOne({ user: request.user.id }).then(profile => {
+            Post.findById(request.params.id)
+                .then(post => {
+                    if (
+                        post.likes.filter(
+                            like => like.user.toString() === request.user.id
+                        ).length > 0
+                    ) {
+                        return response.status(400).json({
+                            alreadyliked: 'User already liked this post'
+                        });
+                    }
+
+                    // Add user id to likes array
+                    post.likes.unshift({ user: request.user.id });
+
+                    post.save().then(post => response.json(post));
+                })
+                .catch(error =>
+                    response.status(404).json({ postnotfound: 'No Post found' })
+                );
+        });
+    }
+);
+
+// @route   POST api/posts/unlike/:id
+// @desc    Unlike post
+// @access  Private
+router.post(
+    '/unlike/:id',
+    passport.authenticate('jwt', { session: false }),
+    (request, response) => {
+        Profile.findOne({ user: request.user.id }).then(profile => {
+            Post.findById(request.params.id)
+                .then(post => {
+                    if (
+                        post.likes.filter(
+                            like => like.user.toString() === request.user.id
+                        ).length === 0
+                    ) {
+                        return response.status(400).json({
+                            notliked: 'You have not yet liked this post'
+                        });
+                    }
+
+                    // Get remove index
+                    const removeIndex = post.likes.map(item =>
+                        item.user.toString().indexOf(request.user.id)
+                    );
+
+                    // Splice out of array
+                    post.likes.splice(removeIndex, 1);
+
+                    // Save
+                    post.save().then(post => response.json(post));
+                })
+                .catch(error =>
+                    response.status(404).json({ postnotfound: 'No Post found' })
+                );
+        });
+    }
+);
 module.exports = router;
