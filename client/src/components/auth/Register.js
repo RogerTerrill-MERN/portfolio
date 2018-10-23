@@ -5,6 +5,14 @@ import classnames from 'classnames';
 class Register extends Component {
   constructor() {
     super();
+    this.initialState ={
+      name: '',
+      email: '',
+      password: '',
+      password2: '',
+      errors: {}
+    }
+
     this.state = {
       name: '',
       email: '',
@@ -29,8 +37,12 @@ class Register extends Component {
 
     axios
       .post('/api/users/register', newUser)
-      .then(response => console.log(response.data))
+      .then(response => {
+        console.log(response.data);
+        this.setState(this.initialState);
+      })
       .catch(error => this.setState({ errors: error.response.data }));
+
   };
 
   render() {
